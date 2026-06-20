@@ -1,7 +1,7 @@
 # Public Repo Audit Report
 
 ## Summary
-Target: `test_cli_generates_default_rep0`
+Target: `agent-desk`
 Score: 100/100
 Verdict: showcase-ready
 

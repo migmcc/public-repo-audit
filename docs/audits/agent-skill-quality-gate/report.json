@@ -1,10 +1,19 @@
 {
-  "target": "test_cli_generates_default_rep0",
-  "score": 100,
+  "target": "agent-skill-quality-gate",
+  "score": 93,
   "verdict": "showcase-ready",
   "blockers": [],
   "warnings": [],
-  "recommendations": [],
+  "recommendations": [
+    {
+      "code": "MISSING_CHANGELOG",
+      "severity": "recommendation",
+      "category": "Public readiness",
+      "message": "CHANGELOG.md is missing.",
+      "recommendation": "Add a changelog so public users can understand project evolution.",
+      "location": "CHANGELOG.md"
+    }
+  ],
   "checklist": [
     {
       "name": "Identity",
@@ -25,7 +34,7 @@
     },
     {
       "name": "Public readiness",
-      "passed": 3,
+      "passed": 2,
       "total": 3,
       "items": [
         {
@@ -40,7 +49,7 @@
         },
         {
           "label": "CHANGELOG.md exists",
-          "passed": true,
+          "passed": false,
           "detail": "Tracks changes."
         }
       ]

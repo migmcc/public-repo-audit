@@ -11,7 +11,7 @@ The v0.1 score is deterministic and category-based.
 - Documentation: 15
 - Safety: 10
 
-Each category contributes according to checklist completion. Blockers subtract 5 points each and warnings subtract 2 points each, but blockers always force the final verdict to `blocked`.
+Each category contributes according to checklist completion. Blockers subtract 5 points each and warnings subtract 2 points each; recommendations are actionable guidance and do not subtract points by themselves. Blockers always force the final verdict to `blocked`. Reports display the audited repository name instead of the local absolute path so versioned reports do not leak machine-specific paths.
 
 ## Verdicts
 
@@ -21,3 +21,4 @@ Each category contributes according to checklist completion. Blockers subtract 5
 - 60-79: needs-work
 - 0-59: not-ready
 - Any blocker: blocked
+

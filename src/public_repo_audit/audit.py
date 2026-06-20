@@ -161,6 +161,17 @@ def _build_checklist(target: Path, findings: list[Finding]) -> list[CategoryChec
                 ".github/workflows/ci.yml",
             )
         )
+    if not (target / "CHANGELOG.md").is_file():
+        findings.append(
+            Finding(
+                "MISSING_CHANGELOG",
+                Severity.RECOMMENDATION,
+                "Public readiness",
+                "CHANGELOG.md is missing.",
+                "Add a changelog so public users can understand project evolution.",
+                "CHANGELOG.md",
+            )
+        )
     if not has_docs:
         findings.append(
             Finding(
@@ -371,3 +382,4 @@ def _verdict(score: int, blockers: list[Finding]) -> str:
     if score >= 60:
         return "needs-work"
     return "not-ready"
+

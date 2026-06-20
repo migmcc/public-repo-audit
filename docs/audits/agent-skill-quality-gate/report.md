@@ -1,8 +1,8 @@
 # Public Repo Audit Report
 
 ## Summary
-Target: `test_cli_generates_default_rep0`
-Score: 100/100
+Target: `agent-skill-quality-gate`
+Score: 93/100
 Verdict: showcase-ready
 
 ## Blockers
@@ -12,17 +12,17 @@ Verdict: showcase-ready
 - No warnings found.
 
 ## Recommendations
-- No recommendations found.
+- **MISSING_CHANGELOG** (Public readiness) CHANGELOG.md is missing. Recommendation: Add a changelog so public users can understand project evolution. Location: `CHANGELOG.md`
 
 ## Checklist
 ### Identity (2/2)
 - [x] README.md exists - Public entry point.
 - [x] README has quickstart - Fast usage path.
 
-### Public readiness (3/3)
+### Public readiness (2/3)
 - [x] LICENSE exists - Publication license.
 - [x] .gitignore exists - Avoids noise.
-- [x] CHANGELOG.md exists - Tracks changes.
+- [ ] CHANGELOG.md exists - Tracks changes.
 
 ### Python project health (3/3)
 - [x] pyproject.toml exists - Python metadata.

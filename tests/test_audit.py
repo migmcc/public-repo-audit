@@ -110,3 +110,27 @@ def test_cli_generates_default_reports(tmp_path: Path, capsys) -> None:
     assert (Path.cwd() / "report.md").exists()
     assert (Path.cwd() / "report.json").exists()
 
+
+
+def test_missing_changelog_is_actionable_recommendation(tmp_path: Path) -> None:
+    make_python_repo(tmp_path)
+    (tmp_path / "CHANGELOG.md").unlink()
+
+    report = audit_repository(tmp_path)
+
+    assert "MISSING_CHANGELOG" in {finding.code for finding in report.recommendations}
+
+
+def test_reports_do_not_include_absolute_target_path(tmp_path: Path) -> None:
+    make_python_repo(tmp_path)
+    report = audit_repository(tmp_path)
+
+    markdown_path = tmp_path / "report.md"
+    json_path = tmp_path / "report.json"
+    write_markdown_report(report, markdown_path)
+    write_json_report(report, json_path)
+
+    markdown = markdown_path.read_text(encoding="utf-8")
+    data = json.loads(json_path.read_text(encoding="utf-8"))
+    assert str(tmp_path) not in markdown
+    assert data["target"] == tmp_path.name

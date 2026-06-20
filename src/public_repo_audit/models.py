@@ -71,7 +71,7 @@ class AuditReport:
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "target": str(self.target),
+            "target": self.target.name,
             "score": self.score,
             "verdict": self.verdict,
             "blockers": [finding.to_dict() for finding in self.blockers],
@@ -79,3 +79,4 @@ class AuditReport:
             "recommendations": [finding.to_dict() for finding in self.recommendations],
             "checklist": [category.to_dict() for category in self.checklist],
         }
+

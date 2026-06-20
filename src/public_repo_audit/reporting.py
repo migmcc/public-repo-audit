@@ -21,7 +21,7 @@ def _render_markdown(report: AuditReport) -> str:
         "# Public Repo Audit Report",
         "",
         "## Summary",
-        f"Target: `{report.target}`",
+        f"Target: `{report.target.name}`",
         f"Score: {report.score}/100",
         f"Verdict: {report.verdict}",
         "",
@@ -51,3 +51,4 @@ def _finding_lines(findings: list[Finding], empty: str) -> list[str]:
         + (f" Location: `{finding.location}`" if finding.location else "")
         for finding in findings
     ]
+
