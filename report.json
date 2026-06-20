@@ -1,0 +1,122 @@
+{
+  "target": "C:\\Users\\Miguel\\AppData\\Local\\Temp\\pytest-of-Miguel\\pytest-104\\test_cli_generates_default_rep0",
+  "score": 100,
+  "verdict": "showcase-ready",
+  "blockers": [],
+  "warnings": [],
+  "recommendations": [],
+  "checklist": [
+    {
+      "name": "Identity",
+      "passed": 2,
+      "total": 2,
+      "items": [
+        {
+          "label": "README.md exists",
+          "passed": true,
+          "detail": "Public entry point."
+        },
+        {
+          "label": "README has quickstart",
+          "passed": true,
+          "detail": "Fast usage path."
+        }
+      ]
+    },
+    {
+      "name": "Public readiness",
+      "passed": 3,
+      "total": 3,
+      "items": [
+        {
+          "label": "LICENSE exists",
+          "passed": true,
+          "detail": "Publication license."
+        },
+        {
+          "label": ".gitignore exists",
+          "passed": true,
+          "detail": "Avoids noise."
+        },
+        {
+          "label": "CHANGELOG.md exists",
+          "passed": true,
+          "detail": "Tracks changes."
+        }
+      ]
+    },
+    {
+      "name": "Python project health",
+      "passed": 3,
+      "total": 3,
+      "items": [
+        {
+          "label": "pyproject.toml exists",
+          "passed": true,
+          "detail": "Python metadata."
+        },
+        {
+          "label": "pyproject.toml is valid",
+          "passed": true,
+          "detail": "Parseable TOML."
+        },
+        {
+          "label": "Python package structure exists",
+          "passed": true,
+          "detail": "Importable code."
+        }
+      ]
+    },
+    {
+      "name": "CI/readiness",
+      "passed": 3,
+      "total": 3,
+      "items": [
+        {
+          "label": "tests/ exists",
+          "passed": true,
+          "detail": "Test folder."
+        },
+        {
+          "label": "test files exist",
+          "passed": true,
+          "detail": "Runnable tests."
+        },
+        {
+          "label": "GitHub Actions CI exists",
+          "passed": true,
+          "detail": "Automated check."
+        }
+      ]
+    },
+    {
+      "name": "Documentation",
+      "passed": 2,
+      "total": 2,
+      "items": [
+        {
+          "label": "docs/ or examples/ exists",
+          "passed": true,
+          "detail": "Usage depth."
+        },
+        {
+          "label": "README has usage hints",
+          "passed": true,
+          "detail": "Practical instructions."
+        }
+      ]
+    },
+    {
+      "name": "Safety",
+      "passed": 1,
+      "total": 1,
+      "items": [
+        {
+          "label": "secret scan completed",
+          "passed": true,
+          "detail": "Local scan only."
+        }
+      ]
+    }
+  ]
+}
