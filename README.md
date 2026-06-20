@@ -26,6 +26,16 @@ By default the command writes:
 
 It also prints the final score and verdict in the terminal.
 
+Example output:
+
+```text
+Score: 100/100
+Verdict: showcase-ready
+Blockers: 0
+Warnings: 0
+Recommendations: 0
+```
+
 ## Usage
 
 ```powershell
@@ -83,6 +93,16 @@ The MVP v0.1 checks these categories:
 - AI/LLM analysis.
 - AgentDesk integration.
 
+## Scoring
+
+The score is deterministic and based on a fixed checklist. Category weights are documented in [`docs/scoring.md`](docs/scoring.md).
+
+Recommendations are actionable guidance and do not subtract points by themselves. Critical blockers always force the final verdict to `blocked`.
+
+## Release Status
+
+Version `0.1.0` is prepared for public release review. No release tag has been created yet.
+
 ## Development
 
 ```powershell
@@ -92,4 +112,5 @@ pytest
 ```
 
 The runtime implementation uses only the Python standard library.
+
 

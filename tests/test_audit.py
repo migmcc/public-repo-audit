@@ -57,14 +57,15 @@ def test_missing_readme_license_and_invalid_pyproject_are_blockers(tmp_path: Pat
 
 def test_possible_secret_is_reported_without_exposing_value(tmp_path: Path) -> None:
     make_python_repo(tmp_path)
-    secret = "sk" + "_test_" + "1234567890abcdef"
-    write(tmp_path / ".env", f"API_KEY={secret}\n")
+    key_name = "API" + "_KEY"
+    fake_value = "sk" + "_test_" + "1234567890abcdef"
+    write(tmp_path / ".env", f"{key_name}={fake_value}\n")
 
     report = audit_repository(tmp_path)
 
     [finding] = [item for item in report.blockers if item.code == "POSSIBLE_SECRET"]
     assert ".env" in finding.location
-    assert secret not in finding.message
+    assert fake_value not in finding.message
     assert report.verdict == "blocked"
 
 
@@ -98,11 +99,15 @@ def test_failed_supplied_test_command_is_blocker(tmp_path: Path) -> None:
     assert report.verdict == "blocked"
 
 
-def test_cli_generates_default_reports(tmp_path: Path, capsys) -> None:
+def test_cli_generates_default_reports(tmp_path: Path, capsys, monkeypatch) -> None:
     from public_repo_audit.cli import run
 
-    make_python_repo(tmp_path)
-    exit_code = run([str(tmp_path)])
+    target = tmp_path / "target"
+    output_dir = tmp_path / "output"
+    make_python_repo(target)
+    output_dir.mkdir()
+    monkeypatch.chdir(output_dir)
+    exit_code = run([str(target)])
 
     captured = capsys.readouterr()
     assert exit_code == 0
@@ -134,3 +139,5 @@ def test_reports_do_not_include_absolute_target_path(tmp_path: Path) -> None:
     data = json.loads(json_path.read_text(encoding="utf-8"))
     assert str(tmp_path) not in markdown
     assert data["target"] == tmp_path.name
+
+

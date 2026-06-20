@@ -10,7 +10,27 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [{ name = "CriaTek" }]
+keywords = ["github", "open-source", "audit", "python", "readiness", "cli"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Quality Assurance",
+  "Topic :: Utilities",
+]
 dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff"]
+
+[project.urls]
+Homepage = "https://github.com/CriaTek/public-repo-audit"
+Issues = "https://github.com/CriaTek/public-repo-audit/issues"
 
 [project.scripts]
 public-repo-audit = "public_repo_audit.cli:main"

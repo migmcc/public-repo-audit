@@ -1,5 +1,5 @@
 {
-  "target": "test_cli_generates_default_rep0",
+  "target": "public-repo-audit",
   "score": 100,
   "verdict": "showcase-ready",
   "blockers": [],

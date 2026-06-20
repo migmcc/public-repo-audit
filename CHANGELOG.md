@@ -7,3 +7,6 @@
 - Deterministic scoring and verdicts.
 - Markdown and JSON report output.
 - Critical blockers, warnings and recommendations.
+- Public release metadata prepared.
+- CI configured for Python 3.12 and 3.13.
+
