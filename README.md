@@ -9,7 +9,7 @@ Audit whether a local Python repository is ready to be public on GitHub.
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python -m pip install -e .
-public-repo-audit .
+.\.venv\Scripts\public-repo-audit .
 ```
 
 Without installing the package, run it directly from a checkout:
@@ -112,5 +112,6 @@ pytest
 ```
 
 The runtime implementation uses only the Python standard library.
+
 
 
