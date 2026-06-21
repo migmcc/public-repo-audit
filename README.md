@@ -101,7 +101,7 @@ Recommendations are actionable guidance and do not subtract points by themselves
 
 ## Release Status
 
-Version `0.1.0` is prepared for public release review. No release tag has been created yet.
+Version `0.1.0` is published. Future release changes should use a new tag and release.
 
 ## Development
 
@@ -112,6 +112,7 @@ pytest
 ```
 
 The runtime implementation uses only the Python standard library.
+
 
 
 
