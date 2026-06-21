@@ -1,5 +1,7 @@
 # public-repo-audit
 
+[![CI](https://github.com/migmcc/public-repo-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/migmcc/public-repo-audit/actions/workflows/ci.yml)
+
 Audit whether a local Python repository is ready to be public on GitHub.
 
 `public-repo-audit` is a deterministic, local-only CLI. It checks public readiness signals such as README, license, Python packaging metadata, tests, CI, documentation, examples and basic safety hygiene.
@@ -103,6 +105,10 @@ The MVP v0.1 checks these categories:
 - AI/LLM analysis.
 - AgentDesk integration.
 
+## GitHub Actions
+
+Use [`docs/github-actions.md`](docs/github-actions.md) for CI readiness guidance and [`docs/examples/github-actions-public-repo-audit.yml`](docs/examples/github-actions-public-repo-audit.yml) for a copy-pasteable workflow example.
+
 ## Scoring
 
 The score is deterministic and based on a fixed checklist. Category weights are documented in [`docs/scoring.md`](docs/scoring.md).
@@ -122,7 +128,3 @@ pytest
 ```
 
 The runtime implementation uses only the Python standard library.
-
-
-
-
