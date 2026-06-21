@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 from public_repo_audit.audit import audit_repository
@@ -139,5 +140,89 @@ def test_reports_do_not_include_absolute_target_path(tmp_path: Path) -> None:
     data = json.loads(json_path.read_text(encoding="utf-8"))
     assert str(tmp_path) not in markdown
     assert data["target"] == tmp_path.name
+
+
+def run_cli_in_clean_output(tmp_path: Path, args: list[str]) -> tuple[int, Path]:
+    from public_repo_audit.cli import run
+
+    target = tmp_path / "target"
+    output_dir = tmp_path / "output"
+    make_python_repo(target)
+    output_dir.mkdir()
+    cwd_before = Path.cwd()
+    try:
+        os.chdir(output_dir)
+        exit_code = run([str(target), *args])
+    finally:
+        os.chdir(cwd_before)
+    return exit_code, output_dir
+
+
+def test_cli_format_both_writes_markdown_and_json(tmp_path: Path) -> None:
+    exit_code, output_dir = run_cli_in_clean_output(tmp_path, ["--format", "both"])
+
+    assert exit_code == 0
+    assert (output_dir / "report.md").exists()
+    assert (output_dir / "report.json").exists()
+
+
+def test_cli_format_markdown_writes_only_markdown(tmp_path: Path) -> None:
+    exit_code, output_dir = run_cli_in_clean_output(tmp_path, ["--format", "markdown"])
+
+    assert exit_code == 0
+    assert (output_dir / "report.md").exists()
+    assert not (output_dir / "report.json").exists()
+
+
+def test_cli_format_json_writes_only_json(tmp_path: Path) -> None:
+    exit_code, output_dir = run_cli_in_clean_output(tmp_path, ["--format", "json"])
+
+    assert exit_code == 0
+    assert not (output_dir / "report.md").exists()
+    assert (output_dir / "report.json").exists()
+
+
+def test_cli_format_modes_keep_same_score(tmp_path: Path) -> None:
+    _, both_dir = run_cli_in_clean_output(tmp_path / "both", ["--format", "both"])
+    _, markdown_dir = run_cli_in_clean_output(
+        tmp_path / "markdown", ["--format", "markdown"]
+    )
+    _, json_dir = run_cli_in_clean_output(tmp_path / "json", ["--format", "json"])
+
+    both_json = json.loads((both_dir / "report.json").read_text(encoding="utf-8"))
+    markdown_text = (markdown_dir / "report.md").read_text(encoding="utf-8")
+    json_only = json.loads((json_dir / "report.json").read_text(encoding="utf-8"))
+
+    assert both_json["score"] == json_only["score"] == 100
+    assert "Score: 100/100" in markdown_text
+
+
+def test_cli_format_respects_custom_output_paths(tmp_path: Path) -> None:
+    _, markdown_dir = run_cli_in_clean_output(
+        tmp_path / "markdown", ["--format", "markdown", "--markdown", "custom.md"]
+    )
+    _, json_dir = run_cli_in_clean_output(
+        tmp_path / "json", ["--format", "json", "--json", "custom.json"]
+    )
+
+    assert (markdown_dir / "custom.md").exists()
+    assert not (markdown_dir / "report.json").exists()
+    assert (json_dir / "custom.json").exists()
+    assert not (json_dir / "report.md").exists()
+
+
+def test_cli_invalid_format_fails_cleanly(tmp_path: Path) -> None:
+    from public_repo_audit.cli import run
+
+    target = tmp_path / "target"
+    make_python_repo(target)
+
+    try:
+        run([str(target), "--format", "xml"])
+    except SystemExit as exc:
+        assert exc.code == 2
+    else:
+        raise AssertionError("invalid --format value should fail through argparse")
+
 
 
