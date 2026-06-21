@@ -42,6 +42,16 @@ Recommendations: 0
 public-repo-audit <path>
 ```
 
+Select which reports to write:
+
+```powershell
+public-repo-audit . --format both
+public-repo-audit . --format markdown
+public-repo-audit . --format json
+```
+
+`--format both` is the default and preserves the v0.1 behavior of writing both `report.md` and `report.json`.
+
 Custom output paths:
 
 ```powershell

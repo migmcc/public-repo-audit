@@ -16,6 +16,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--markdown", default="report.md", help="Markdown report path.")
     parser.add_argument("--json", default="report.json", help="JSON report path.")
     parser.add_argument(
+        "--format",
+        choices=("both", "markdown", "json"),
+        default="both",
+        help="Report format to write: both, markdown, or json.",
+    )
+    parser.add_argument(
         "--test-command", help="Optional test command to run inside the target path."
     )
     return parser
@@ -24,8 +30,10 @@ def build_parser() -> argparse.ArgumentParser:
 def run(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     report = audit_repository(Path(args.path), test_command=args.test_command)
-    write_markdown_report(report, args.markdown)
-    write_json_report(report, args.json)
+    if args.format in {"both", "markdown"}:
+        write_markdown_report(report, args.markdown)
+    if args.format in {"both", "json"}:
+        write_json_report(report, args.json)
     print(f"Score: {report.score}/100")
     print(f"Verdict: {report.verdict}")
     print(f"Blockers: {len(report.blockers)}")
