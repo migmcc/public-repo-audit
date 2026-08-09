@@ -65,7 +65,11 @@ def detect_profile(target: str | Path) -> Profile:
     python_files = _count_files(root, ".py")
     markdown_files = _count_files(root, ".md")
 
-    if markdown_files >= DOCS_MIN_FILES and markdown_files >= DOCS_RATIO * python_files:
+    if (
+        python_files
+        and markdown_files >= DOCS_MIN_FILES
+        and markdown_files >= DOCS_RATIO * python_files
+    ):
         return Profile(
             PYTHON_DOCS,
             f"{markdown_files} Markdown files against {python_files} Python files.",

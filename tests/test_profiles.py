@@ -81,6 +81,16 @@ def test_repository_without_python_is_unknown(tmp_path):
     assert detect_profile(empty_fixture(tmp_path)).name == UNKNOWN
 
 
+def test_markdown_only_repository_is_not_a_python_project(tmp_path):
+    """`python-docs` requires Python; Markdown alone is not a Python project."""
+    repo = make_repo(tmp_path, "prose-repo")
+    (repo / "docs").mkdir()
+    for index in range(8):
+        (repo / "docs" / f"page-{index}.md").write_text("# page\n", encoding="utf-8")
+
+    assert detect_profile(repo).name == UNKNOWN
+
+
 def test_package_without_packaging_metadata_is_an_app(tmp_path):
     repo = package_fixture(tmp_path)
     (repo / "pyproject.toml").unlink()

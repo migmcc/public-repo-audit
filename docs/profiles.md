@@ -33,10 +33,15 @@ filesystem iteration order.
 
 ## Thresholds
 
-A repository is documentation-heavy when it has **at least 5** Markdown files
-**and at least 3 times** as many Markdown files as Python files.
+A repository is documentation-heavy when it contains **at least one** Python
+file, **at least 5** Markdown files, and **at least 3 times** as many Markdown
+files as Python files.
 
-Both conditions exist for a reason. The floor stops a three-file repository
+The Python requirement is what keeps the profile honest about its own name: a
+repository of pure prose with no Python in it is not a documentation-heavy
+Python project, and is reported as `unknown`.
+
+The other two conditions exist for a reason. The floor stops a three-file repository
 from qualifying by accident. The ratio stops an ordinary, well-documented
 package from being reclassified as a documentation project just because it
 takes its docs seriously — a package with 10 Python files would need 30
