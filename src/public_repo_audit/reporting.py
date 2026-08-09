@@ -22,6 +22,8 @@ def _render_markdown(report: AuditReport) -> str:
         "",
         "## Summary",
         f"Target: `{report.target.name}`",
+        f"Profile: {report.profile}"
+        + (f" ({report.profile_reason})" if report.profile_reason else ""),
         f"Score: {report.score}/100",
         f"Verdict: {report.verdict}",
         "",

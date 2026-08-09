@@ -12,6 +12,7 @@ from public_repo_audit.models import (
     Finding,
     Severity,
 )
+from public_repo_audit.profiles import detect_profile
 
 CATEGORY_WEIGHTS = {
     "Identity": 15,
@@ -74,10 +75,13 @@ def audit_repository(path: str | Path, test_command: str | None = None) -> Audit
     recommendations = [item for item in findings if item.severity is Severity.RECOMMENDATION]
     score = _score(checklist, blockers, warnings)
     verdict = _verdict(score, blockers)
+    profile = detect_profile(target)
     return AuditReport(
         target=target,
         score=score,
         verdict=verdict,
+        profile=profile.name,
+        profile_reason=profile.reason,
         blockers=blockers,
         warnings=warnings,
         recommendations=recommendations,

@@ -68,6 +68,23 @@ public-repo-audit . --test-command "pytest"
 
 If the supplied test command fails, the audit records a critical blocker.
 
+## Repository profile
+
+Every audit reports which kind of repository it detected — `python-package`,
+`python-app`, `python-docs` or `unknown` — in the terminal and in both report
+formats, together with the evidence that selected it:
+
+```text
+Profile: python-package
+Score: 100/100
+Verdict: showcase-ready
+```
+
+Detection is deterministic and reads the file tree only. It does not change
+scoring or which checks run; Python-first behaviour is unchanged. See
+[docs/profiles.md](docs/profiles.md) for the rules, their order, and the
+thresholds.
+
 ## Verdicts
 
 - `80+`: publishable

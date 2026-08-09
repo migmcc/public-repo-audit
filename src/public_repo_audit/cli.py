@@ -34,6 +34,7 @@ def run(argv: list[str] | None = None) -> int:
         write_markdown_report(report, args.markdown)
     if args.format in {"both", "json"}:
         write_json_report(report, args.json)
+    print(f"Profile: {report.profile}")
     print(f"Score: {report.score}/100")
     print(f"Verdict: {report.verdict}")
     print(f"Blockers: {len(report.blockers)}")
