@@ -7,6 +7,10 @@
 - Detect and report a repository profile (`python-package`, `python-app`,
   `python-docs`, `unknown`). Detection is deterministic and local-only, appears
   in both reports and in the terminal output, and does not change scoring.
+- Add CLI `--config` option to override category scoring weights from a TOML
+  file. Scoring is unchanged without it, weights are normalised to the
+  100-point scale, and the file is never auto-discovered inside the audited
+  repository.
 
 ## 0.1.0 - 2026-06-20
 

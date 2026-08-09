@@ -5,6 +5,7 @@ import subprocess
 import tomllib
 from pathlib import Path
 
+from public_repo_audit.config import DEFAULT_CATEGORY_WEIGHTS
 from public_repo_audit.models import (
     AuditReport,
     CategoryChecklist,
@@ -14,14 +15,7 @@ from public_repo_audit.models import (
 )
 from public_repo_audit.profiles import detect_profile
 
-CATEGORY_WEIGHTS = {
-    "Identity": 15,
-    "Public readiness": 20,
-    "Python project health": 25,
-    "CI/readiness": 15,
-    "Documentation": 15,
-    "Safety": 10,
-}
+CATEGORY_WEIGHTS = DEFAULT_CATEGORY_WEIGHTS
 
 SKIP_DIRS = {
     ".git",
@@ -59,7 +53,11 @@ TEXT_SUFFIXES = {
 }
 
 
-def audit_repository(path: str | Path, test_command: str | None = None) -> AuditReport:
+def audit_repository(
+    path: str | Path,
+    test_command: str | None = None,
+    weights: dict[str, float] | None = None,
+) -> AuditReport:
     target = Path(path).resolve()
     if not target.exists() or not target.is_dir():
         raise ValueError(f"Target must be an existing directory: {target}")
@@ -73,7 +71,7 @@ def audit_repository(path: str | Path, test_command: str | None = None) -> Audit
     blockers = [item for item in findings if item.severity is Severity.BLOCKER]
     warnings = [item for item in findings if item.severity is Severity.WARNING]
     recommendations = [item for item in findings if item.severity is Severity.RECOMMENDATION]
-    score = _score(checklist, blockers, warnings)
+    score = _score(checklist, blockers, warnings, weights)
     verdict = _verdict(score, blockers)
     profile = detect_profile(target)
     return AuditReport(
@@ -362,11 +360,24 @@ def _run_test_command(target: Path, command: str, findings: list[Finding]) -> No
 
 
 def _score(
-    checklist: list[CategoryChecklist], blockers: list[Finding], warnings: list[Finding]
+    checklist: list[CategoryChecklist],
+    blockers: list[Finding],
+    warnings: list[Finding],
+    weights: dict[str, float] | None = None,
 ) -> int:
+    resolved = weights or DEFAULT_CATEGORY_WEIGHTS
+    # Weights express relative emphasis, so they are normalised to the 100-point
+    # scale before use. Without this, a config whose weights sum above 100 would
+    # silently saturate every healthy repository at the maximum score.
+    total_weight = sum(
+        resolved.get(category.name, DEFAULT_CATEGORY_WEIGHTS[category.name])
+        for category in checklist
+    )
     score = 0.0
     for category in checklist:
-        weight = CATEGORY_WEIGHTS[category.name]
+        weight = resolved.get(category.name, DEFAULT_CATEGORY_WEIGHTS[category.name])
+        if total_weight:
+            weight = weight * 100 / total_weight
         ratio = category.passed / category.total if category.total else 0
         score += weight * ratio
     score -= len(blockers) * 5
