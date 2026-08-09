@@ -13,9 +13,14 @@ from public_repo_audit.models import (
     Finding,
     Severity,
 )
-from public_repo_audit.profiles import detect_profile
+from public_repo_audit.profiles import NODE_PROJECT, detect_profile, read_package_json
 
 CATEGORY_WEIGHTS = DEFAULT_CATEGORY_WEIGHTS
+
+NODE_LOCKFILES = ("package-lock.json", "npm-shrinkwrap.json", "yarn.lock", "pnpm-lock.yaml")
+
+# `npm init` writes this placeholder; it exits non-zero and runs no tests.
+NPM_PLACEHOLDER_TEST = 'echo "Error: no test specified" && exit 1'
 
 SKIP_DIRS = {
     ".git",
@@ -63,7 +68,8 @@ def audit_repository(
         raise ValueError(f"Target must be an existing directory: {target}")
 
     findings: list[Finding] = []
-    checklist = _build_checklist(target, findings)
+    profile = detect_profile(target)
+    checklist = _build_checklist(target, findings, profile.name)
     _scan_for_secrets(target, findings)
     if test_command:
         _run_test_command(target, test_command, findings)
@@ -73,7 +79,6 @@ def audit_repository(
     recommendations = [item for item in findings if item.severity is Severity.RECOMMENDATION]
     score = _score(checklist, blockers, warnings, weights)
     verdict = _verdict(score, blockers)
-    profile = detect_profile(target)
     return AuditReport(
         target=target,
         score=score,
@@ -87,7 +92,15 @@ def audit_repository(
     )
 
 
-def _build_checklist(target: Path, findings: list[Finding]) -> list[CategoryChecklist]:
+def _build_checklist(
+    target: Path, findings: list[Finding], profile: str = ""
+) -> list[CategoryChecklist]:
+    if profile == NODE_PROJECT:
+        return _build_node_checklist(target, findings)
+    return _build_python_checklist(target, findings)
+
+
+def _build_python_checklist(target: Path, findings: list[Finding]) -> list[CategoryChecklist]:
     readme = target / "README.md"
     license_file = target / "LICENSE"
     pyproject = target / "pyproject.toml"
@@ -97,28 +110,8 @@ def _build_checklist(target: Path, findings: list[Finding]) -> list[CategoryChec
     has_python_structure = _has_python_structure(target)
     pyproject_valid = _is_valid_pyproject(pyproject, findings)
 
-    if not readme.is_file():
-        findings.append(
-            Finding(
-                "MISSING_README",
-                Severity.BLOCKER,
-                "Identity",
-                "README.md is required for a public repository.",
-                "Add a README with purpose, quickstart and usage examples.",
-                "README.md",
-            )
-        )
-    if not license_file.is_file():
-        findings.append(
-            Finding(
-                "MISSING_LICENSE",
-                Severity.BLOCKER,
-                "Public readiness",
-                "LICENSE is required before publication.",
-                "Add a project license file before publishing.",
-                "LICENSE",
-            )
-        )
+    _common_findings(target, findings, has_tests, has_ci, has_docs)
+
     if not pyproject.exists():
         findings.append(
             Finding(
@@ -141,51 +134,6 @@ def _build_checklist(target: Path, findings: list[Finding]) -> list[CategoryChec
                 "src/",
             )
         )
-    if not has_tests:
-        findings.append(
-            Finding(
-                "MISSING_TESTS",
-                Severity.WARNING,
-                "CI/readiness",
-                "No tests were found.",
-                "Add tests/ with at least one test file.",
-                "tests/",
-            )
-        )
-    if not has_ci:
-        findings.append(
-            Finding(
-                "MISSING_CI",
-                Severity.WARNING,
-                "CI/readiness",
-                "GitHub Actions CI workflow is missing.",
-                "Add .github/workflows/ci.yml to run tests automatically.",
-                ".github/workflows/ci.yml",
-            )
-        )
-    if not (target / "CHANGELOG.md").is_file():
-        findings.append(
-            Finding(
-                "MISSING_CHANGELOG",
-                Severity.RECOMMENDATION,
-                "Public readiness",
-                "CHANGELOG.md is missing.",
-                "Add a changelog so public users can understand project evolution.",
-                "CHANGELOG.md",
-            )
-        )
-    if not has_docs:
-        findings.append(
-            Finding(
-                "MISSING_DOCS_OR_EXAMPLES",
-                Severity.RECOMMENDATION,
-                "Documentation",
-                "No docs/ or examples/ directory was found.",
-                "Add docs/ or examples/ to show how the project is used.",
-                "docs/ or examples/",
-            )
-        )
-
     return [
         CategoryChecklist(
             "Identity",
@@ -239,6 +187,239 @@ def _build_checklist(target: Path, findings: list[Finding]) -> list[CategoryChec
             "Safety", [ChecklistItem("secret scan completed", True, "Local scan only.")]
         ),
     ]
+
+
+def _common_findings(
+    target: Path, findings: list[Finding], has_tests: bool, has_ci: bool, has_docs: bool
+) -> None:
+    """Findings that do not depend on the language of the repository."""
+    if not (target / "README.md").is_file():
+        findings.append(
+            Finding(
+                "MISSING_README",
+                Severity.BLOCKER,
+                "Identity",
+                "README.md is required for a public repository.",
+                "Add a README with purpose, quickstart and usage examples.",
+                "README.md",
+            )
+        )
+    if not (target / "LICENSE").is_file():
+        findings.append(
+            Finding(
+                "MISSING_LICENSE",
+                Severity.BLOCKER,
+                "Public readiness",
+                "LICENSE is required before publication.",
+                "Add a project license file before publishing.",
+                "LICENSE",
+            )
+        )
+    if not has_tests:
+        findings.append(
+            Finding(
+                "MISSING_TESTS",
+                Severity.WARNING,
+                "CI/readiness",
+                "No tests were found.",
+                "Add tests/ with at least one test file.",
+                "tests/",
+            )
+        )
+    if not has_ci:
+        findings.append(
+            Finding(
+                "MISSING_CI",
+                Severity.WARNING,
+                "CI/readiness",
+                "GitHub Actions CI workflow is missing.",
+                "Add .github/workflows/ci.yml to run tests automatically.",
+                ".github/workflows/ci.yml",
+            )
+        )
+    if not (target / "CHANGELOG.md").is_file():
+        findings.append(
+            Finding(
+                "MISSING_CHANGELOG",
+                Severity.RECOMMENDATION,
+                "Public readiness",
+                "CHANGELOG.md is missing.",
+                "Add a changelog so public users can understand project evolution.",
+                "CHANGELOG.md",
+            )
+        )
+    if not has_docs:
+        findings.append(
+            Finding(
+                "MISSING_DOCS_OR_EXAMPLES",
+                Severity.RECOMMENDATION,
+                "Documentation",
+                "No docs/ or examples/ directory was found.",
+                "Add docs/ or examples/ to show how the project is used.",
+                "docs/ or examples/",
+            )
+        )
+
+
+def _build_node_checklist(target: Path, findings: list[Finding]) -> list[CategoryChecklist]:
+    readme = target / "README.md"
+    manifest = target / "package.json"
+    package = read_package_json(target)
+    scripts = package.get("scripts", {}) if package else {}
+    if not isinstance(scripts, dict):
+        scripts = {}
+
+    manifest_exists = manifest.is_file()
+    manifest_valid = package is not None
+    test_script = str(scripts.get("test", "")).strip()
+    has_test_script = bool(test_script) and test_script != NPM_PLACEHOLDER_TEST
+    lockfile = next((name for name in NODE_LOCKFILES if (target / name).is_file()), "")
+    has_source = _has_node_source(target, package)
+    has_tests = _has_node_tests(target) or has_test_script
+    has_ci = (target / ".github" / "workflows" / "ci.yml").is_file()
+    has_docs = (target / "docs").is_dir() or (target / "examples").is_dir()
+
+    _common_findings(target, findings, has_tests, has_ci, has_docs)
+
+    if not manifest_exists:
+        findings.append(
+            Finding(
+                "MISSING_PACKAGE_JSON",
+                Severity.WARNING,
+                "Node project health",
+                "package.json is missing.",
+                "Add package.json with project metadata and scripts.",
+                "package.json",
+            )
+        )
+    elif not manifest_valid:
+        findings.append(
+            Finding(
+                "INVALID_PACKAGE_JSON",
+                Severity.BLOCKER,
+                "Node project health",
+                "package.json is not valid JSON.",
+                "Fix package.json so Node tooling can parse it.",
+                "package.json",
+            )
+        )
+    if manifest_valid and not has_test_script:
+        findings.append(
+            Finding(
+                "MISSING_TEST_SCRIPT",
+                Severity.WARNING,
+                "Node project health",
+                "package.json declares no runnable test script.",
+                'Add a "test" script that runs the test suite and exits non-zero on failure.',
+                "package.json",
+            )
+        )
+    if not lockfile:
+        findings.append(
+            Finding(
+                "MISSING_LOCKFILE",
+                Severity.WARNING,
+                "Node project health",
+                "No dependency lockfile was found.",
+                "Commit a lockfile so installs are reproducible.",
+                " or ".join(NODE_LOCKFILES),
+            )
+        )
+    if not has_source:
+        findings.append(
+            Finding(
+                "MISSING_NODE_SOURCE",
+                Severity.BLOCKER,
+                "Node project health",
+                "No JavaScript or TypeScript source was found.",
+                "Add source under src/, or declare an entry point in package.json.",
+                "src/",
+            )
+        )
+
+    return [
+        CategoryChecklist(
+            "Identity",
+            [
+                ChecklistItem("README.md exists", readme.is_file(), "Public entry point."),
+                ChecklistItem(
+                    "README has quickstart", _readme_has_quickstart(readme), "Fast usage path."
+                ),
+            ],
+        ),
+        CategoryChecklist(
+            "Public readiness",
+            [
+                ChecklistItem(
+                    "LICENSE exists", (target / "LICENSE").is_file(), "Publication license."
+                ),
+                ChecklistItem(
+                    ".gitignore exists", (target / ".gitignore").is_file(), "Avoids noise."
+                ),
+                ChecklistItem(
+                    "CHANGELOG.md exists", (target / "CHANGELOG.md").is_file(), "Tracks changes."
+                ),
+            ],
+        ),
+        CategoryChecklist(
+            "Node project health",
+            [
+                ChecklistItem("package.json exists", manifest_exists, "Node metadata."),
+                ChecklistItem("package.json is valid", manifest_valid, "Parseable JSON."),
+                ChecklistItem("JavaScript/TypeScript source exists", has_source, "Runnable code."),
+                ChecklistItem(
+                    "dependency lockfile exists",
+                    bool(lockfile),
+                    lockfile or "Reproducible installs.",
+                ),
+            ],
+        ),
+        CategoryChecklist(
+            "CI/readiness",
+            [
+                ChecklistItem("test script declared", has_test_script, "Runnable suite."),
+                ChecklistItem("test files exist", _has_node_tests(target), "Test sources."),
+                ChecklistItem("GitHub Actions CI exists", has_ci, "Automated check."),
+            ],
+        ),
+        CategoryChecklist(
+            "Documentation",
+            [
+                ChecklistItem("docs/ or examples/ exists", has_docs, "Usage depth."),
+                ChecklistItem(
+                    "README has usage hints", _readme_has_usage(readme), "Practical instructions."
+                ),
+            ],
+        ),
+        CategoryChecklist(
+            "Safety", [ChecklistItem("secret scan completed", True, "Local scan only.")]
+        ),
+    ]
+
+
+def _has_node_source(target: Path, package: dict | None) -> bool:
+    entry = str((package or {}).get("main", "")).strip()
+    if entry and (target / entry).is_file():
+        return True
+    for path in target.rglob("*"):
+        if any(part in SKIP_DIRS for part in path.relative_to(target).parts):
+            continue
+        if path.is_file() and path.suffix in {".js", ".mjs", ".cjs", ".ts", ".tsx", ".jsx"}:
+            return True
+    return False
+
+
+def _has_node_tests(target: Path) -> bool:
+    for name in ("tests", "test", "__tests__"):
+        candidate = target / name
+        if candidate.is_dir() and any(candidate.rglob("*")):
+            return True
+    for path in target.rglob("*"):
+        if any(part in SKIP_DIRS for part in path.relative_to(target).parts):
+            continue
+        if path.is_file() and (".test." in path.name or ".spec." in path.name):
+            return True
+    return False
 
 
 def _is_valid_pyproject(path: Path, findings: list[Finding]) -> bool:

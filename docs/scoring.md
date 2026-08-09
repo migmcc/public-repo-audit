@@ -7,9 +7,14 @@ The v0.1 score is deterministic and category-based.
 - Identity: 15
 - Public readiness: 20
 - Python project health: 25
+- Node project health: 25
 - CI/readiness: 15
 - Documentation: 15
 - Safety: 10
+
+A repository carries either the Python or the Node health category, never both,
+so the weights in play always total 100. Both are listed because both are
+configurable.
 
 Each category contributes according to checklist completion.
 

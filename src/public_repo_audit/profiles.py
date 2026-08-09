@@ -6,17 +6,21 @@ always yields the same profile.
 
 Profiles are evaluated in a fixed order and the first match wins:
 
-1. `python-docs`   documentation dominates the tree
+1. `python-docs`    documentation dominates a tree containing Python
 2. `python-package` importable package plus packaging metadata
 3. `python-app`     Python code without packaging metadata
-4. `unknown`        no Python and not documentation-heavy
+4. `node-project`   a parseable `package.json`
+5. `unknown`        none of the above
 
 The order matters and is part of the contract: a repository that satisfies more
-than one rule is reported as the first one it satisfies.
+than one rule is reported as the first one it satisfies. Node is evaluated after
+the Python rules so that a Python project which merely carries a `package.json`
+for tooling is still audited as a Python project.
 """
 
 from __future__ import annotations
 
+import json
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
@@ -25,6 +29,7 @@ from typing import Any
 PYTHON_PACKAGE = "python-package"
 PYTHON_APP = "python-app"
 PYTHON_DOCS = "python-docs"
+NODE_PROJECT = "node-project"
 UNKNOWN = "unknown"
 
 # A repository counts as documentation-heavy only when Markdown clearly
@@ -90,7 +95,25 @@ def detect_profile(target: str | Path) -> Profile:
             )
         return Profile(PYTHON_APP, f"{python_files} Python files without a package layout.")
 
-    return Profile(UNKNOWN, "No Python files and not documentation-heavy.")
+    if (root / "package.json").is_file():
+        # Presence is enough. A malformed package.json is exactly the repository
+        # that needs the Node checks to run and report it, so it must not fall
+        # through to `unknown` and escape auditing.
+        return Profile(NODE_PROJECT, "package.json present.")
+
+    return Profile(UNKNOWN, "No Python files and no package.json.")
+
+
+def read_package_json(root: Path) -> dict[str, Any] | None:
+    """Return the parsed `package.json`, or None when absent or unparseable."""
+    manifest = Path(root) / "package.json"
+    if not manifest.is_file():
+        return None
+    try:
+        data = json.loads(manifest.read_text(encoding="utf-8", errors="ignore"))
+    except (json.JSONDecodeError, OSError):
+        return None
+    return data if isinstance(data, dict) else None
 
 
 def _count_files(root: Path, suffix: str) -> int:

@@ -88,8 +88,8 @@ full list of validation errors.
 ## Repository profile
 
 Every audit reports which kind of repository it detected — `python-package`,
-`python-app`, `python-docs` or `unknown` — in the terminal and in both report
-formats, together with the evidence that selected it:
+`python-app`, `python-docs`, `node-project` or `unknown` — in the terminal and
+in both report formats, together with the evidence that selected it:
 
 ```text
 Profile: python-package
@@ -97,8 +97,14 @@ Score: 100/100
 Verdict: showcase-ready
 ```
 
-Detection is deterministic and reads the file tree only. It does not change
-scoring or which checks run; Python-first behaviour is unchanged. See
+Detection is deterministic and reads the file tree only. Python-first behaviour
+is unchanged: a Python project that also carries a `package.json` is still
+audited as a Python project.
+
+A `node-project` swaps the **Python project health** category for **Node project
+health**, checking `package.json`, a runnable test script, a dependency
+lockfile and JavaScript/TypeScript source instead of `pyproject.toml` and a
+Python package layout. Nothing is installed and no package manager runs. See
 [docs/profiles.md](docs/profiles.md) for the rules, their order, and the
 thresholds.
 

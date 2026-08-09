@@ -20,6 +20,12 @@ DEFAULT_CATEGORY_WEIGHTS: dict[str, float] = {
     "Identity": 15,
     "Public readiness": 20,
     "Python project health": 25,
+    # A repository carries either the Python or the Node health category, never
+    # both, so the weights actually in play still total 100. This table lists
+    # every category the audit can emit and is the only place they are defined:
+    # a second copy in audit.py would let a new profile ship a category this
+    # table has never heard of, and scoring would raise on it.
+    "Node project health": 25,
     "CI/readiness": 15,
     "Documentation": 15,
     "Safety": 10,
