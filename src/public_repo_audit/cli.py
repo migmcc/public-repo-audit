@@ -4,6 +4,7 @@ import argparse
 from pathlib import Path
 
 from public_repo_audit.audit import audit_repository
+from public_repo_audit.config import ConfigError, load_weights
 from public_repo_audit.reporting import write_json_report, write_markdown_report
 
 
@@ -24,12 +25,28 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--test-command", help="Optional test command to run inside the target path."
     )
+    parser.add_argument(
+        "--config",
+        help=(
+            "Optional TOML file overriding category weights. Never discovered "
+            "automatically inside the audited repository."
+        ),
+    )
     return parser
 
 
 def run(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    report = audit_repository(Path(args.path), test_command=args.test_command)
+    weights = None
+    if args.config:
+        try:
+            weights = load_weights(args.config)
+        except ConfigError as exc:
+            print(f"Configuration error: {exc}")
+            return 2
+    report = audit_repository(
+        Path(args.path), test_command=args.test_command, weights=weights
+    )
     if args.format in {"both", "markdown"}:
         write_markdown_report(report, args.markdown)
     if args.format in {"both", "json"}:

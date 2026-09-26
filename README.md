@@ -68,6 +68,23 @@ public-repo-audit . --test-command "pytest"
 
 If the supplied test command fails, the audit records a critical blocker.
 
+Override the category weights with a TOML file:
+
+```powershell
+public-repo-audit . --config audit-weights.toml
+```
+
+```toml
+[weights]
+"Documentation" = 25
+"Safety" = 20
+```
+
+Categories left out keep their default weight, and scoring is unchanged when
+`--config` is omitted. The file is never picked up automatically from the
+audited repository — see [docs/scoring.md](docs/scoring.md) for why, and for the
+full list of validation errors.
+
 ## Repository profile
 
 Every audit reports which kind of repository it detected — `python-package`,
