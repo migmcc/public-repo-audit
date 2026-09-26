@@ -4,6 +4,9 @@
 
 - Add GitHub Actions readiness guidance and a copy-pasteable workflow example.
 - Add CLI `--format` option to write Markdown, JSON, or both report outputs.
+- Detect and report a repository profile (`python-package`, `python-app`,
+  `python-docs`, `unknown`). Detection is deterministic and local-only, appears
+  in both reports and in the terminal output, and does not change scoring.
 
 ## 0.1.0 - 2026-06-20
 

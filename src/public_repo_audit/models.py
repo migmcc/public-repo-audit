@@ -64,6 +64,8 @@ class AuditReport:
     target: Path
     score: int
     verdict: str
+    profile: str = "unknown"
+    profile_reason: str = ""
     blockers: list[Finding] = field(default_factory=list)
     warnings: list[Finding] = field(default_factory=list)
     recommendations: list[Finding] = field(default_factory=list)
@@ -74,6 +76,8 @@ class AuditReport:
             "target": self.target.name,
             "score": self.score,
             "verdict": self.verdict,
+            "profile": self.profile,
+            "profile_reason": self.profile_reason,
             "blockers": [finding.to_dict() for finding in self.blockers],
             "warnings": [finding.to_dict() for finding in self.warnings],
             "recommendations": [finding.to_dict() for finding in self.recommendations],
