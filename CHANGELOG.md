@@ -11,6 +11,10 @@
   file. Scoring is unchanged without it, weights are normalised to the
   100-point scale, and the file is never auto-discovered inside the audited
   repository.
+- Add a `node-project` profile checking `package.json`, a runnable test script,
+  a dependency lockfile and JavaScript/TypeScript source in place of the Python
+  project health category. Nothing is installed and no package manager runs.
+  Python behaviour is unchanged.
 
 ## 0.1.0 - 2026-06-20
 
