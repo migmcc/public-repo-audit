@@ -1,4 +1,40 @@
-# public-repo-audit
+# Public Repo Audit
+
+### Check whether your repository is ready to show the world.
+
+A **local-first, deterministic CLI** that inspects repository structure, documentation, tests, CI, packaging and basic safety hygiene — and generates actionable Markdown and JSON reports.
+
+**[Quick start](#quickstart)** · **[Example output](#example-output)** · **[Scoring](#scoring)** · **[Scope](#out-of-scope-for-v01)**
+
+> This tool performs *readiness checks*, not a full security audit. Its example score is illustrative and depends on the repository being assessed.
+
+## Why use it?
+
+Publishing a repository involves more than pushing source code. Missing README files, licenses, CI checks or accidentally committed secrets can make a project hard to trust or reuse. Public Repo Audit makes those checks explicit so you can resolve issues before release.
+
+```text
+Local repository
+    ↓
+Deterministic checks
+    ↓
+Score + verdict + blockers + recommendations
+    ↓
+report.md + report.json
+```
+
+## Example output
+
+The README documents this sample output (not a benchmark across external repositories):
+
+```text
+Score: 100/100
+Verdict: showcase-ready
+Blockers: 0
+Warnings: 0
+Recommendations: 0
+```
+
+---
 
 [![CI](https://github.com/migmcc/public-repo-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/migmcc/public-repo-audit/actions/workflows/ci.yml)
 
